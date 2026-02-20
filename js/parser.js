@@ -360,18 +360,60 @@ function parseProgressions(rows, data) {
  * Structure : col A = nom, col B = rôle (Singer / Musician / Musician & Singer)
  */
 function parseMembers(rows, data) {
-  rows.forEach(row => {
-    const name = String(row[0] || '').trim();
-    const role = String(row[1] || '').trim();
+  const HEADER_NAME_RE = /member/i;
+  const HEADER_ROLE_RE = /(group|function|type|role)/i;
+  const VALID_ROLE_RE  = /(singer|musician|membre|chanteur)/i;
+  const INVALID_NAME_RE = /^(total|opening|entry|entree|song|songs|praise|worship|language|chart)$/i;
 
-    // Ignore les en-têtes et les totaux numériques
-    if (!name || name === "Member's name" || !isNaN(Number(name))) return;
+  // Trouve la ligne d'en-tête et les indices des colonnes Nom / Rôle
+  let headerIdx = -1;
+  let nameCol   = 0;
+  let roleCol   = 1;
+  for (let i = 0; i < Math.min(rows.length, 20); i++) {
+    const row = rows[i] || [];
+    const nci = row.findIndex(cell => HEADER_NAME_RE.test(String(cell || '')));
+    if (nci < 0) continue;
+
+    const rci = row.findIndex(cell => HEADER_ROLE_RE.test(String(cell || '')));
+    headerIdx = i;
+    nameCol   = nci;
+    roleCol   = rci >= 0 ? rci : Math.max(0, nci + 1);
+    break;
+  }
+
+  // Fallback: ancienne structure simple (A/B)
+  if (headerIdx < 0) {
+    headerIdx = 1;
+    nameCol   = 0;
+    roleCol   = 1;
+  }
+
+  let started = false;
+
+  for (let r = headerIdx + 1; r < rows.length; r++) {
+    const row  = rows[r] || [];
+    const name = String(row[nameCol] || '').replace(/\n/g, ' ').trim();
+    const role = String(row[roleCol] || '').replace(/\n/g, ' ').trim();
+
+    // Une fois la liste commencée, la première ligne vide marque la fin du bloc membres
+    if (started && !name && !role) break;
+    if (!name) continue;
+
+    started = true;
+
+    // Ignore en-têtes résiduels, valeurs numériques et lignes de résumé
+    if (HEADER_NAME_RE.test(name)) continue;
+    if (!isNaN(Number(name))) continue;
+    if (INVALID_NAME_RE.test(name)) continue;
+
+    // Ignore les lignes qui ne ressemblent pas à un rôle membre
+    if (role && !VALID_ROLE_RE.test(role)) continue;
 
     // Évite les doublons
     if (!data.members.find(m => normalizeName(m.name) === normalizeName(name))) {
       data.members.push({ name, role: role || 'Membre' });
     }
-  });
+  }
 }
 
 

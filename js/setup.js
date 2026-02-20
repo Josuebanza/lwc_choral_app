@@ -14,7 +14,7 @@ import { parseXLSX, parseGoogleSheets } from './parser.js';
 import { loadFromCache }                from './state.js';
 import { showToast }                    from './utils.js';
 
-const DEFAULT_XLSX_PATH = 'data/LWC - Repertoire + Range + Key + Progression.xlsx';
+const DEFAULT_XLSX_PATH = './data/LWC - Repertoire + Range + Key + Progression.xlsx';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // INITIALISATION
@@ -176,10 +176,7 @@ function setupDefaultDataBtn(onDataLoaded) {
     showToast('Chargement du fichier par défaut...', '');
 
     try {
-      const response = await fetch(encodeURI(DEFAULT_XLSX_PATH));
-      if (!response.ok) throw new Error(`Impossible de charger le fichier par défaut (HTTP ${response.status}).`);
-
-      const buffer = await response.arrayBuffer();
+      const buffer = await loadDefaultWorkbookBuffer();
       const data   = parseXLSX(buffer);
 
       if (!data.songs.length) {
@@ -199,6 +196,41 @@ function setupDefaultDataBtn(onDataLoaded) {
       btn.textContent = 'Utiliser les données par défaut (dossier data) →';
     }
   });
+}
+
+async function loadDefaultWorkbookBuffer() {
+  const candidates = [
+    DEFAULT_XLSX_PATH,
+    DEFAULT_XLSX_PATH.replace(/^\.\//, ''),
+    new URL(DEFAULT_XLSX_PATH, window.location.href).toString(),
+  ];
+
+  let lastError = null;
+
+  for (const candidate of candidates) {
+    try {
+      const response = await fetch(candidate, { cache: 'no-cache' });
+      if (!response.ok) {
+        lastError = new Error(`HTTP ${response.status} sur ${candidate}`);
+        continue;
+      }
+      return await response.arrayBuffer();
+    } catch (err) {
+      lastError = err;
+    }
+  }
+
+  // Fallback PWA/offline: essaye le cache du navigateur si disponible
+  if ('caches' in window) {
+    for (const candidate of candidates) {
+      const cached = await caches.match(candidate);
+      if (cached && cached.ok) {
+        return await cached.arrayBuffer();
+      }
+    }
+  }
+
+  throw lastError || new Error('Impossible de charger le fichier par défaut.');
 }
 
 
