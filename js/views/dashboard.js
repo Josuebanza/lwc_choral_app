@@ -126,7 +126,7 @@ function renderSectionDist() {
     const cls   = SECTION_CSS[sec] || 'entree';
 
     return `
-      <div class="panel-item">
+      <div class="panel-item clickable-row" onclick="window._goSongsWithFilters({ section: '${sec}' })">
         <div class="panel-item-title">
           <span class="badge badge-${cls}">${sec}</span>
         </div>
@@ -150,7 +150,7 @@ function renderLangDist() {
     const pc = pct(count, total);
 
     return `
-      <div class="panel-item">
+      <div class="panel-item clickable-row" onclick="window._goSongsWithFilters({ langue: '${lang}' })">
         <div class="panel-item-title">${LANGUE_LABELS[lang] || lang}</div>
         <div class="dist-bar-wrap">
           <div class="dist-bar">

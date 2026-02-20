@@ -133,6 +133,28 @@ function showView(view) {
   }
 }
 
+/**
+ * Ouvre la vue Chansons et applique des filtres avant rendu.
+ * @param {{ section?: string, langue?: string }} filters
+ */
+function goToSongsWithFilters(filters = {}) {
+  const sectionEl = document.getElementById('songs-section');
+  const langueEl  = document.getElementById('songs-langue');
+  const searchEl  = document.getElementById('songs-search');
+  const progEl    = document.getElementById('songs-prog');
+  const lyricsEl  = document.getElementById('songs-lyrics');
+  const sortEl    = document.getElementById('songs-sort');
+
+  if (sectionEl) sectionEl.value = filters.section || '';
+  if (langueEl)  langueEl.value  = filters.langue || '';
+  if (searchEl)  searchEl.value  = '';
+  if (progEl)    progEl.value    = '';
+  if (lyricsEl)  lyricsEl.value  = '';
+  if (sortEl)    sortEl.value    = 'title';
+
+  showView('songs');
+}
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // RESET — Retour à l'écran de configuration
@@ -162,4 +184,8 @@ window._selectMember = (name) => {
 window._memberSearch = () => {
   state.memberSongsPage = 1;
   if (state.selectedMember) renderMemberDetail(state.selectedMember);
+};
+
+window._goSongsWithFilters = (filters) => {
+  goToSongsWithFilters(filters || {});
 };

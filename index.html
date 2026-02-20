@@ -73,6 +73,10 @@
         <button class="setup-btn" id="upload-btn" disabled>
           Charger le fichier →
         </button>
+
+        <button class="setup-btn setup-btn-secondary" id="default-data-btn">
+          Utiliser les données par défaut (dossier data) →
+        </button>
       </div>
 
 
@@ -178,16 +182,16 @@
       <nav class="sidebar-nav">
         <div class="nav-section-label">Navigation</div>
 
-        <div class="nav-item active" data-view="dashboard">
+        <div class="nav-item active" data-view="dashboard" aria-label="Dashboard" title="Dashboard">
           <span class="nav-icon">📊</span> Dashboard
         </div>
-        <div class="nav-item" data-view="songs">
+        <div class="nav-item" data-view="songs" aria-label="Chansons" title="Chansons">
           <span class="nav-icon">🎶</span> Chansons
         </div>
-        <div class="nav-item" data-view="members">
+        <div class="nav-item" data-view="members" aria-label="Membres" title="Membres">
           <span class="nav-icon">👤</span> Membres
         </div>
-        <div class="nav-item" data-view="service">
+        <div class="nav-item" data-view="service" aria-label="Service" title="Service">
           <span class="nav-icon">📋</span> Service
         </div>
       </nav>

@@ -14,6 +14,7 @@ import { parseXLSX, parseGoogleSheets } from './parser.js';
 import { loadFromCache }                from './state.js';
 import { showToast }                    from './utils.js';
 
+const DEFAULT_XLSX_PATH = 'data/LWC - Repertoire + Range + Key + Progression.xlsx';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // INITIALISATION
@@ -29,6 +30,7 @@ export function initSetup(onDataLoaded) {
   setupTabs();
   setupDropZone(onDataLoaded);
   setupUploadBtn(onDataLoaded);
+  setupDefaultDataBtn(onDataLoaded);
   setupSheetsBtn(onDataLoaded);
   setupCacheBtn(onDataLoaded);
   setupSheetsValidation();
@@ -160,6 +162,41 @@ function setupUploadBtn(onDataLoaded) {
       showToast('Erreur : ' + err.message, 'error');
       btn.disabled = false;
       btn.textContent = 'Charger le fichier →';
+    }
+  });
+}
+
+function setupDefaultDataBtn(onDataLoaded) {
+  const btn = document.getElementById('default-data-btn');
+  if (!btn) return;
+
+  btn.addEventListener('click', async () => {
+    btn.disabled = true;
+    btn.textContent = '⏳ Chargement des données par défaut...';
+    showToast('Chargement du fichier par défaut...', '');
+
+    try {
+      const response = await fetch(encodeURI(DEFAULT_XLSX_PATH));
+      if (!response.ok) throw new Error(`Impossible de charger le fichier par défaut (HTTP ${response.status}).`);
+
+      const buffer = await response.arrayBuffer();
+      const data   = parseXLSX(buffer);
+
+      if (!data.songs.length) {
+        throw new Error('Aucune chanson trouvée dans le fichier par défaut.');
+      }
+
+      onDataLoaded(data);
+
+    } catch (err) {
+      console.error('[Setup] Erreur chargement par défaut :', err);
+      const isFileProtocol = window.location.protocol === 'file:';
+      const msg = isFileProtocol
+        ? 'Impossible de charger le fichier par défaut en mode file://. Lancez un serveur local (ex: Live Server).'
+        : err.message;
+      showToast('Erreur : ' + msg, 'error');
+      btn.disabled = false;
+      btn.textContent = 'Utiliser les données par défaut (dossier data) →';
     }
   });
 }
