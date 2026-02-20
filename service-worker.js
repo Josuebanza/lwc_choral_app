@@ -1,4 +1,4 @@
-const SW_VERSION = 'lwc-pwa-v1';
+const SW_VERSION = 'lwc-pwa-v2';
 const STATIC_CACHE = `${SW_VERSION}-static`;
 const RUNTIME_CACHE = `${SW_VERSION}-runtime`;
 

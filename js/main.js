@@ -20,7 +20,7 @@ import { initMembersView, renderMemberCards,
 import { initServiceView, renderServiceTable,
          populateMemberFilter }                   from './views/service.js';
 import { SINGERS, AVATAR_COLORS }                 from './config.js';
-import { normalizeName }                          from './utils.js';
+import { normalizePersonName }                    from './utils.js';
 import { initPWA }                                from './pwa.js';
 
 
@@ -68,14 +68,14 @@ function launchApp(data) {
   // Les chanteurs identifiés via les colonnes "Key" du XLSX
   SINGERS.forEach(name => {
     const hasSongs = state.songs.some(s => s.memberKeys[name]);
-    if (hasSongs && !state.members.find(m => normalizeName(m.name) === normalizeName(name))) {
+    if (hasSongs && !state.members.find(m => normalizePersonName(m.name) === normalizePersonName(name))) {
       state.members.push({ name, role: 'Chanteur·se' });
     }
   });
 
   // Les chanteurs trouvés dans la feuille "Vocal Range"
   Object.keys(state.vocalRanges || {}).forEach(name => {
-    if (!state.members.find(m => normalizeName(m.name) === normalizeName(name))) {
+    if (!state.members.find(m => normalizePersonName(m.name) === normalizePersonName(name))) {
       state.members.push({ name, role: 'Chanteur·se' });
     }
   });
@@ -85,7 +85,7 @@ function launchApp(data) {
     state.songs.flatMap(s => Object.keys(s.musicians).map(k => k.split(' ')[0]))
   );
   musiciansFound.forEach(mName => {
-    if (!state.members.find(m => normalizeName(m.name) === normalizeName(mName))) {
+    if (!state.members.find(m => normalizePersonName(m.name) === normalizePersonName(mName))) {
       state.members.push({ name: mName, role: 'Musicien·ne' });
     }
   });

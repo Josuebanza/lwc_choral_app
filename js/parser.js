@@ -11,7 +11,7 @@
  */
 
 import { SINGERS } from './config.js';
-import { normalizeName } from './utils.js';
+import { normalizePersonName } from './utils.js';
 
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -38,21 +38,8 @@ export function parseXLSX(arrayBuffer) {
 function parseWorkbook(wb) {
   const data = makeEmptyData();
 
-  // Correspondance nom de feuille → type de traitement
-  const SHEET_TYPES = {
-    'Entrée':           'songs',
-    'S-E':              'songs',
-    'Louange':          'songs',
-    'Adoration':        'songs',
-    'Progression Blank':'progressions',
-    'Report sheet':     'members',
-    'Vocal Range':      'vocalRange',
-    'Groupes vocal':    'vocalGroups',
-    'Taches':           'tasks',
-  };
-
   wb.SheetNames.forEach(name => {
-    const type = SHEET_TYPES[name];
+    const type = getSheetType(name);
     if (!type) return; // feuille ignorée (Old_Style_*, etc.)
 
     // Convertit la feuille en tableau de tableaux (header:1 = première ligne comme index 0)
@@ -62,7 +49,7 @@ function parseWorkbook(wb) {
       defval: '',    // cellule vide = chaîne vide
     });
 
-    processSheet(rows, name, type, data);
+    processSheet(rows, canonicalSheetName(name, type), type, data);
   });
 
   return data;
@@ -102,17 +89,8 @@ export async function parseGoogleSheets(spreadsheetId, gids) {
     const parsed = window.Papa.parse(csv, { skipEmptyLines: false });
     const rows   = parsed.data;
 
-    const TYPE_MAP = {
-      'Entrée': 'songs', 'S-E': 'songs', 'Louange': 'songs', 'Adoration': 'songs',
-      'Progression Blank': 'progressions',
-      'Report sheet':      'members',
-      'Vocal Range':       'vocalRange',
-      'Groupes vocal':     'vocalGroups',
-      'Taches':            'tasks',
-    };
-
-    const type = TYPE_MAP[sheetName];
-    if (type) processSheet(rows, sheetName, type, data);
+    const type = getSheetType(sheetName);
+    if (type) processSheet(rows, canonicalSheetName(sheetName, type), type, data);
   }
 
   return data;
@@ -410,7 +388,7 @@ function parseMembers(rows, data) {
     if (role && !VALID_ROLE_RE.test(role)) continue;
 
     // Évite les doublons
-    if (!data.members.find(m => normalizeName(m.name) === normalizeName(name))) {
+    if (!data.members.find(m => normalizePersonName(m.name) === normalizePersonName(name))) {
       data.members.push({ name, role: role || 'Membre' });
     }
   }
@@ -433,17 +411,13 @@ function parseVocalRange(rows, data) {
   // Localise dynamiquement la ligne "Voice Type" pour éviter tout décalage
   // si une ligne est insérée/supprimée dans la feuille.
   const typeRowIdx = rows.findIndex(row =>
-    (row || []).some(cell => toKey(cell) === 'voice type')
+    (row || []).some(cell => {
+      const k = toKey(cell);
+      return k.includes('voice') && k.includes('type');
+    })
   );
 
   if (typeRowIdx < 0) return;
-
-  const nameRow  = getRow(typeRowIdx - 2);
-  const typeRow  = getRow(typeRowIdx);
-  const lowRow   = getRow(typeRowIdx + 2);
-  const highRow  = getRow(typeRowIdx + 4);
-  const headRow  = getRow(typeRowIdx + 6);
-  const primaRow = getRow(typeRowIdx + 8);
 
   const isMemberName = (val) => {
     const t = norm(val);
@@ -451,6 +425,45 @@ function parseVocalRange(rows, data) {
     if (/^(voice type|refer to table below|middle c|from:|to:|soprano|alto|tenor|bass)$/i.test(t)) return false;
     return /^[A-Za-z][A-Za-z'\- ]*$/.test(t);
   };
+  const countNames = (row) => (row || []).filter(isMemberName).length;
+
+  // Cherche la meilleure ligne de noms juste au-dessus de "Voice Type".
+  let nameRowIdx = -1;
+  let bestScore = -1;
+  for (let i = Math.max(0, typeRowIdx - 6); i < typeRowIdx; i++) {
+    const score = countNames(getRow(i));
+    if (score > bestScore) {
+      bestScore = score;
+      nameRowIdx = i;
+    }
+  }
+  if (nameRowIdx < 0 || bestScore < 2) return;
+
+  const findMetricRowIdx = (labelRe) => {
+    // Priorité: lignes après "Voice Type"
+    for (let i = typeRowIdx + 1; i < rows.length; i++) {
+      const row = getRow(i);
+      if (row.some(cell => labelRe.test(toKey(cell)))) return i;
+    }
+    // Fallback: recherche globale
+    for (let i = 0; i < rows.length; i++) {
+      const row = getRow(i);
+      if (row.some(cell => labelRe.test(toKey(cell)))) return i;
+    }
+    return -1;
+  };
+
+  const lowRowIdx   = findMetricRowIdx(/low\s*chest/);
+  const highRowIdx  = findMetricRowIdx(/high\s*chest/);
+  const headRowIdx  = findMetricRowIdx(/head\s*voice/);
+  const primaRowIdx = findMetricRowIdx(/prima\s*voce/);
+
+  const nameRow  = getRow(nameRowIdx);
+  const typeRow  = getRow(typeRowIdx);
+  const lowRow   = getRow(lowRowIdx);
+  const highRow  = getRow(highRowIdx);
+  const headRow  = getRow(headRowIdx);
+  const primaRow = getRow(primaRowIdx);
 
   for (let col = 0; col < nameRow.length; col++) {
     const rawName = norm(nameRow[col]);
@@ -489,20 +502,49 @@ function parseVocalRange(rows, data) {
  *  - Ligne 6 : ['Bass', ...]
  */
 function parseVocalGroups(rows, data) {
-  const leadRow  = rows[2] || [];
-  const PARTS    = ['Soprano', 'Alto 1', 'Alto 2/Tenor', 'Bass'];
-  const partRows = [rows[3]||[], rows[4]||[], rows[5]||[], rows[6]||[]];
+  const norm = (v) => String(v || '').replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
+  const toKey = (v) => norm(v).toLowerCase();
+  const PARTS = ['Soprano', 'Alto 1', 'Alto 2/Tenor', 'Bass'];
 
-  // Col 0 = "Lead" (label), cols 1+ = noms des leads
-  for (let col = 1; col < leadRow.length; col++) {
-    const lead = String(leadRow[col] || '').trim();
-    if (!lead || lead === 'Lead') continue;
+  const partLabel = (label) => {
+    const k = toKey(label);
+    if (!k) return null;
+    if (k.includes('soprano')) return 'Soprano';
+    if (k.includes('alto 1')) return 'Alto 1';
+    if (k.includes('alto 2') || k.includes('tenor')) return 'Alto 2/Tenor';
+    if (k.includes('bass')) return 'Bass';
+    return null;
+  };
 
+  const leadRowIdx = rows.findIndex(row =>
+    (row || []).some(cell => /^lead$/i.test(norm(cell)))
+  );
+  if (leadRowIdx < 0) return;
+
+  const leadRow = rows[leadRowIdx] || [];
+  const leadLabelCol = leadRow.findIndex(cell => /^lead$/i.test(norm(cell)));
+  if (leadLabelCol < 0) return;
+
+  const leads = [];
+  for (let col = leadLabelCol + 1; col < leadRow.length; col++) {
+    const lead = norm(leadRow[col]);
+    if (!lead) continue;
+    leads.push({ lead, col });
     data.vocalGroups[lead] = {};
+    PARTS.forEach(p => { data.vocalGroups[lead][p] = []; });
+  }
+  if (!leads.length) return;
 
-    PARTS.forEach((part, pi) => {
-      const raw = String(partRows[pi][col] || '').replace(/,\s*$/, '').trim();
-      // Sépare les noms par virgule et nettoie
+  for (let r = leadRowIdx + 1; r < rows.length; r++) {
+    const row = rows[r] || [];
+    const part = partLabel(row[leadLabelCol]);
+
+    const rowHasData = row.some(cell => norm(cell));
+    if (!rowHasData) break;
+    if (!part) continue;
+
+    leads.forEach(({ lead, col }) => {
+      const raw = norm(row[col]).replace(/,\s*$/, '');
       data.vocalGroups[lead][part] = raw
         ? raw.split(',').map(s => s.trim()).filter(Boolean)
         : [];
@@ -566,4 +608,35 @@ function makeEmptyData() {
     vocalGroups: {},
     tasks: {},
   };
+}
+
+function normalizeSheetName(name) {
+  return String(name || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase();
+}
+
+function getSheetType(sheetName) {
+  const n = normalizeSheetName(sheetName);
+  if (n === 'entree' || n === 's-e' || n === 'se' || n === 'louange' || n === 'adoration') return 'songs';
+  if (n === 'progression blank') return 'progressions';
+  if (n === 'report sheet') return 'members';
+  if (n === 'vocal range') return 'vocalRange';
+  if (n === 'groupes vocal' || n === 'groupes vocaux') return 'vocalGroups';
+  if (n === 'taches' || n === 'tasks') return 'tasks';
+  return null;
+}
+
+function canonicalSheetName(sheetName, type) {
+  if (type !== 'songs') return sheetName;
+
+  const n = normalizeSheetName(sheetName);
+  if (n === 'entree') return 'Entrée';
+  if (n === 's-e' || n === 'se') return 'S-E';
+  if (n === 'louange') return 'Louange';
+  if (n === 'adoration') return 'Adoration';
+  return sheetName;
 }

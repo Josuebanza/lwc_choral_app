@@ -187,3 +187,73 @@ export function findKeyByName(obj, name) {
   const target = normalizeName(name);
   return Object.keys(obj).find(k => normalizeName(k) === target) || null;
 }
+
+const PERSON_NAME_ALIASES = {
+  voldie: 'voldis',
+  voldis: 'voldis',
+  maannie: 'mamanannie',
+  mamanannie: 'mamanannie',
+};
+
+/**
+ * Normalise un nom de personne pour comparer des variantes inter-feuilles.
+ * Ex: "Ma'Annie" -> "mamanannie", "Voldie" -> "voldis"
+ *
+ * @param {string} name
+ * @returns {string}
+ */
+export function normalizePersonName(name) {
+  const base = String(name || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '');
+
+  return PERSON_NAME_ALIASES[base] || base;
+}
+
+/**
+ * Compare deux noms de personnes de façon tolérante.
+ *
+ * @param {string} a
+ * @param {string} b
+ * @returns {boolean}
+ */
+export function arePersonNamesEquivalent(a, b) {
+  const an = normalizePersonName(a);
+  const bn = normalizePersonName(b);
+  if (!an || !bn) return false;
+  if (an === bn) return true;
+
+  const aFirst = normalizePersonName(String(a || '').trim().split(/\s+/)[0]);
+  const bFirst = normalizePersonName(String(b || '').trim().split(/\s+/)[0]);
+
+  if (!aFirst || !bFirst) return false;
+  return aFirst === bFirst || aFirst.startsWith(bFirst) || bFirst.startsWith(aFirst);
+}
+
+/**
+ * Cherche une clé de dictionnaire correspondant à un nom de personne.
+ * Utilise la normalisation "personne" + fallback sur le prénom.
+ *
+ * @param {Object} obj
+ * @param {string} name
+ * @returns {string|null}
+ */
+export function findPersonKeyByName(obj, name) {
+  const keys = Object.keys(obj || {});
+  const target = normalizePersonName(name);
+
+  const direct = keys.find(k => normalizePersonName(k) === target);
+  if (direct) return direct;
+
+  const nameFirst = String(name || '').trim().split(/\s+/)[0] || '';
+  const first = keys.find(k => {
+    const kFirst = String(k || '').trim().split(/\s+/)[0] || '';
+    return arePersonNamesEquivalent(kFirst, nameFirst);
+  });
+
+  return first || null;
+}

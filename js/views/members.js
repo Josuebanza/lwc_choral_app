@@ -10,7 +10,7 @@
 
 import { state }                    from '../state.js';
 import { SECTION_CSS, AVATAR_COLORS, PER_PAGE } from '../config.js';
-import { esc, renderPagination, findKeyByName } from '../utils.js';
+import { esc, renderPagination, findPersonKeyByName, arePersonNamesEquivalent } from '../utils.js';
 
 
 /** Initialise les écouteurs. Appelée une fois depuis main.js. */
@@ -27,7 +27,7 @@ export function renderMemberCards() {
 
   document.getElementById('members-grid').innerHTML = members.map((m, idx) => {
     const color    = AVATAR_COLORS[idx % AVATAR_COLORS.length];
-    const songCount = state.songs.filter(s => s.memberKeys[m.name]).length;
+    const songCount = state.songs.filter(s => !!findPersonKeyByName(s.memberKeys, m.name)).length;
     const isSelected = state.selectedMember === m.name;
 
     return `
@@ -76,7 +76,8 @@ export function renderMemberDetail(name) {
 
   // Toutes les chansons liées à ce membre
   const allMemberSongs = state.songs.filter(s =>
-    s.memberKeys[name] || Object.keys(s.musicians).some(k => k.startsWith(name))
+    !!findPersonKeyByName(s.memberKeys, name)
+    || Object.keys(s.musicians).some(k => arePersonNamesEquivalent(k.split(' ')[0], name))
   );
 
   // Comptage par section
@@ -149,7 +150,7 @@ function buildProfileHeader(member, color, totalSongs, sectionCounts) {
 
 /** Bloc tessiture vocale */
 function buildVocalRange(name) {
-  const key = findKeyByName(state.vocalRanges, name);
+  const key = findPersonKeyByName(state.vocalRanges, name);
   const vr  = key ? state.vocalRanges[key] : null;
 
   if (!vr || (!vr.voiceType && !vr.primaVoce)) return '';
@@ -183,16 +184,15 @@ function buildVocalRange(name) {
 /** Bloc groupes vocaux */
 function buildVocalGroups(name) {
   // 1. Quand CE membre est le lead
-  const asLead = state.vocalGroups[name];
+  const leadKey = findPersonKeyByName(state.vocalGroups, name);
+  const asLead = leadKey ? state.vocalGroups[leadKey] : null;
 
   // 2. Rôles quand les AUTRES sont leads
   const rolesWhenOthersLead = [];
   Object.entries(state.vocalGroups).forEach(([lead, parts]) => {
-    if (lead === name) return;
+    if (arePersonNamesEquivalent(lead, name)) return;
     Object.entries(parts).forEach(([part, members]) => {
-      // Cherche le prénom du membre dans les valeurs (pour les variantes d'apostrophes)
-      const firstName = name.split(' ')[0].toLowerCase();
-      const found = members.some(m => m.toLowerCase().includes(firstName));
+      const found = members.some(m => arePersonNamesEquivalent(m, name));
       if (found) rolesWhenOthersLead.push({ lead, part });
     });
   });
@@ -236,12 +236,7 @@ function buildVocalGroups(name) {
 
 /** Bloc tâches */
 function buildTasks(name) {
-  // Cherche le membre dans les tâches (correspondance approximative par prénom)
-  const taskKey = Object.keys(state.tasks).find(k => {
-    const kFirst   = k.split(' ')[0].toLowerCase();
-    const nFirst   = name.split(' ')[0].toLowerCase();
-    return kFirst === nFirst || k.toLowerCase() === name.toLowerCase();
-  });
+  const taskKey = findPersonKeyByName(state.tasks, name);
 
   const memberTasks = taskKey ? state.tasks[taskKey] : [];
   const allTasks    = [...new Set(Object.values(state.tasks).flat())];
@@ -298,7 +293,8 @@ function buildSongsTable(name, searchVal, sectionVal, total, slice) {
           ${slice.length === 0
             ? `<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--text3);">Aucun résultat</td></tr>`
             : slice.map(s => {
-                const key = s.memberKeys[name] || '—';
+                const memberKey = findPersonKeyByName(s.memberKeys, name);
+                const key = memberKey ? s.memberKeys[memberKey] : '—';
                 const sc  = SECTION_CSS[s.section] || 'entree';
                 const lng = s.langue.toLowerCase().replace('/', '') || '—';
                 return `
