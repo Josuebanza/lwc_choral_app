@@ -422,35 +422,55 @@ function parseMembers(rows, data) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Structure de la feuille (indices de lignes, base 0) :
- *  - Ligne 9  : noms des membres (cols 3-14)
- *  - Ligne 11 : types de voix
- *  - Ligne 14 : Low Chest
- *  - Ligne 16 : High Chest
- *  - Ligne 18 : Head Voice
- *  - Ligne 20 : Prima Voce (tessitura idéale)
+ * Parse la feuille Vocal Range via des ancres textuelles (ex: "Voice Type")
+ * pour rester robuste même si des lignes/colonnes sont décalées.
  */
 function parseVocalRange(rows, data) {
+  const norm = (v) => String(v || '').replace(/\n/g, ' ').trim();
+  const toKey = (v) => norm(v).toLowerCase();
   const getRow = (idx) => rows[idx] || [];
 
-  const nameRow  = getRow(9);
-  const typeRow  = getRow(11);
-  const lowRow   = getRow(14);
-  const highRow  = getRow(16);
-  const headRow  = getRow(18);
-  const primaRow = getRow(20);
+  // Localise dynamiquement la ligne "Voice Type" pour éviter tout décalage
+  // si une ligne est insérée/supprimée dans la feuille.
+  const typeRowIdx = rows.findIndex(row =>
+    (row || []).some(cell => toKey(cell) === 'voice type')
+  );
 
-  // Les noms commencent à la colonne 3 (index 3 = col D dans Excel)
-  for (let col = 3; col < nameRow.length; col++) {
-    const rawName = String(nameRow[col] || '').replace(/\n/g, ' ').trim();
-    if (!rawName) continue;
+  if (typeRowIdx < 0) return;
+
+  const nameRow  = getRow(typeRowIdx - 2);
+  const typeRow  = getRow(typeRowIdx);
+  const lowRow   = getRow(typeRowIdx + 2);
+  const highRow  = getRow(typeRowIdx + 4);
+  const headRow  = getRow(typeRowIdx + 6);
+  const primaRow = getRow(typeRowIdx + 8);
+
+  const isMemberName = (val) => {
+    const t = norm(val);
+    if (!t) return false;
+    if (/^(voice type|refer to table below|middle c|from:|to:|soprano|alto|tenor|bass)$/i.test(t)) return false;
+    return /^[A-Za-z][A-Za-z'\- ]*$/.test(t);
+  };
+
+  for (let col = 0; col < nameRow.length; col++) {
+    const rawName = norm(nameRow[col]);
+    if (!isMemberName(rawName)) continue;
+
+    const voiceType = norm(typeRow[col]);
+    const lowChest  = norm(lowRow[col]);
+    const highChest = norm(highRow[col]);
+    const headVoice = norm(headRow[col]);
+    const primaVoce = norm(primaRow[col]);
+
+    // Ignore les colonnes de nom qui n'ont aucune donnée de tessiture.
+    if (!voiceType && !lowChest && !highChest && !headVoice && !primaVoce) continue;
 
     data.vocalRanges[rawName] = {
-      voiceType: String(typeRow[col]  || '').replace(/\n/g, ' ').trim(),
-      lowChest:  String(lowRow[col]   || '').trim(),
-      highChest: String(highRow[col]  || '').trim(),
-      headVoice: String(headRow[col]  || '').trim(),
-      primaVoce: String(primaRow[col] || '').trim(),
+      voiceType,
+      lowChest,
+      highChest,
+      headVoice,
+      primaVoce,
     };
   }
 }

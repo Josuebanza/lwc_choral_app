@@ -73,6 +73,13 @@ function launchApp(data) {
     }
   });
 
+  // Les chanteurs trouvés dans la feuille "Vocal Range"
+  Object.keys(state.vocalRanges || {}).forEach(name => {
+    if (!state.members.find(m => normalizeName(m.name) === normalizeName(name))) {
+      state.members.push({ name, role: 'Chanteur·se' });
+    }
+  });
+
   // Les musiciens identifiés via les colonnes "Piano / Drum / Bass / Guitar"
   const musiciansFound = new Set(
     state.songs.flatMap(s => Object.keys(s.musicians).map(k => k.split(' ')[0]))
