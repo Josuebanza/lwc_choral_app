@@ -1,0 +1,834 @@
+/* =============================================================================
+   COMPONENTS.CSS — Composants réutilisables
+   =============================================================================
+
+   Table des matières :
+   1.  Grille de statistiques (dashboard)
+   2.  Barre de recherche + filtres
+   3.  Tableau de données
+   4.  Pagination
+   5.  Modal (détail chanson)
+   6.  Cartes membres
+   7.  Panneaux (dashboard)
+   8.  Onglets de section (service)
+   9.  Profil membre (tessiture, groupes, tâches)
+   10. Grille 2 colonnes
+   ============================================================================= */
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   1. GRILLE DE STATISTIQUES
+   ───────────────────────────────────────────────────────────────────────────── */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+}
+
+.stat-card .stat-value {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1;
+}
+
+.stat-card .stat-label {
+  font-size: 0.75rem;
+  color: var(--text2);
+  margin-top: 0.3rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.stat-card .stat-sub {
+  font-size: 0.72rem;
+  color: var(--text3);
+  margin-top: 0.4rem;
+}
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   2. BARRE DE RECHERCHE + FILTRES
+   ───────────────────────────────────────────────────────────────────────────── */
+.search-bar {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Wrapper de l'input de recherche (avec icône) */
+.search-input-wrap {
+  flex: 1;
+  min-width: 200px;
+  position: relative;
+}
+
+.search-input-wrap .search-icon {
+  position: absolute;
+  left: 0.85rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text3);
+  font-size: 0.9rem;
+  pointer-events: none;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.65rem 0.85rem 0.65rem 2.4rem;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.search-input:focus { border-color: var(--accent); }
+.search-input::placeholder { color: var(--text3); }
+
+/* Select de filtre */
+.filter-select {
+  padding: 0.65rem 0.85rem;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text2);
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.82rem;
+  outline: none;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.filter-select:focus { border-color: var(--accent); }
+
+/* Compteur de résultats */
+.results-info {
+  color: var(--text3);
+  font-size: 0.8rem;
+  padding: 0.3rem 0 0.6rem;
+}
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   3. TABLEAU DE DONNÉES
+   ───────────────────────────────────────────────────────────────────────────── */
+.table-wrap {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead th {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-size: 0.72rem;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg3);
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+tbody td {
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+tbody tr:last-child td { border-bottom: none; }
+
+tbody tr:hover td { background: rgba(255,255,255,0.018); }
+
+/* Ligne cliquable (ouvre le modal) */
+.clickable-row {
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.clickable-row:hover td {
+  background: rgba(201,168,76,0.04) !important;
+}
+
+/* Contenu des cellules titre */
+.cell-title { font-weight: 500; color: var(--text); }
+.cell-sub   { font-size: 0.75rem; color: var(--text3); margin-top: 0.1rem; }
+
+/* Badge de jours "non chanté" */
+.days-badge {
+  font-size: 0.72rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  background: var(--bg4);
+  color: var(--text3);
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.days-badge.urgent { background: rgba(239,68,68,0.12); color: var(--danger); }
+.days-badge.recent { background: rgba(34,197,94,0.12); color: var(--success); }
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   4. PAGINATION
+   ───────────────────────────────────────────────────────────────────────────── */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 0;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.pagination-info {
+  color: var(--text3);
+  font-size: 0.8rem;
+}
+
+.pagination-btns {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.page-btn {
+  padding: 0.4rem 0.75rem;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text2);
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: 'Outfit', sans-serif;
+  min-width: 34px;
+  text-align: center;
+}
+
+.page-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.page-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #000;
+  font-weight: 600;
+}
+
+.page-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   5. MODAL (détail d'une chanson)
+   ───────────────────────────────────────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.72);
+  z-index: 200;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+.modal-overlay.open {
+  display: flex;
+}
+
+.modal {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  max-width: 720px;
+  width: 100%;
+  max-height: 88vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 80px rgba(0,0,0,0.8);
+  margin: auto;
+}
+
+.modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 1.5rem 1.5rem 1rem;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--bg2);
+  z-index: 1;
+}
+
+.modal-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+  line-height: 1.2;
+  flex: 1;
+  padding-right: 1rem;
+}
+
+.modal-close-btn {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text2);
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+
+.modal-close-btn:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.modal-badges {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+/* Section interne du modal */
+.modal-section {
+  margin-bottom: 1.75rem;
+}
+
+.modal-section:last-child { margin-bottom: 0; }
+
+.modal-section-title {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text3);
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+/* Grille de méta-infos (date, jours, etc.) */
+.meta-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.75rem;
+}
+
+.meta-item {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.75rem;
+}
+
+.meta-item-label {
+  font-size: 0.68rem;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.35rem;
+  font-weight: 500;
+}
+
+.meta-item-value {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* Grille de tonalités par membre */
+.keys-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.5rem;
+}
+
+.key-item {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.6rem 0.75rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.key-item-name { font-size: 0.82rem; color: var(--text2); }
+.key-item-value { font-weight: 600; color: var(--accent); }
+.key-item-value.empty { color: var(--text3); font-weight: 400; font-style: italic; }
+
+/* Chips de musiciens */
+.musician-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.musician-chip {
+  padding: 0.3rem 0.8rem;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  font-size: 0.78rem;
+  color: var(--text2);
+}
+
+.musician-chip.assigned {
+  background: rgba(201,168,76,0.1);
+  border-color: rgba(201,168,76,0.3);
+  color: var(--accent);
+}
+
+/* Bloc de progression d'accords */
+.progression-block {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  font-size: 0.85rem;
+  color: var(--text2);
+  line-height: 1.9;
+  white-space: pre-wrap;
+  font-family: 'Courier New', monospace;
+}
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   6. CARTES MEMBRES
+   ───────────────────────────────────────────────────────────────────────────── */
+.members-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.member-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.member-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+
+.member-card.selected {
+  border-color: var(--accent);
+  background: rgba(201,168,76,0.06);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+
+.member-avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+  flex-shrink: 0;
+}
+
+.member-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-bottom: 0.15rem;
+}
+
+.member-role {
+  font-size: 0.75rem;
+  color: var(--text2);
+}
+
+.member-song-count {
+  margin-top: 0.75rem;
+  font-size: 0.8rem;
+  color: var(--text3);
+}
+
+.member-song-count span {
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   7. PANNEAUX DASHBOARD
+   ───────────────────────────────────────────────────────────────────────────── */
+.panels-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+@media (max-width: 900px) {
+  .panels-grid { grid-template-columns: 1fr; }
+}
+
+.panel {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.panel-header {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.panel-title {
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.panel-body {
+  max-height: 340px;
+  overflow-y: auto;
+}
+
+.panel-item {
+  padding: 0.65rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.12s;
+  gap: 0.75rem;
+}
+
+.panel-item:last-child { border-bottom: none; }
+.panel-item:hover { background: rgba(255,255,255,0.02); }
+
+.panel-item-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.panel-item-sub {
+  font-size: 0.72rem;
+  color: var(--text3);
+  margin-top: 0.1rem;
+}
+
+/* Barre de distribution (sections, langues) */
+.dist-bar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.dist-bar {
+  width: 80px;
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.dist-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.dist-count {
+  font-size: 0.8rem;
+  color: var(--text2);
+  min-width: 28px;
+  text-align: right;
+}
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   8. ONGLETS DE SECTION (vue Service)
+   ───────────────────────────────────────────────────────────────────────────── */
+.section-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.section-tab {
+  padding: 0.55rem 1.2rem;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--text2);
+  user-select: none;
+}
+
+.section-tab:hover { border-color: var(--text3); color: var(--text); }
+
+.section-tab[data-section="Entrée"].active    { background: rgba(16,185,129,0.15); border-color: var(--entree); color: var(--entree); }
+.section-tab[data-section="S-E"].active       { background: rgba(249,115,22,0.15); border-color: var(--se); color: var(--se); }
+.section-tab[data-section="Louange"].active   { background: rgba(129,140,248,0.15); border-color: var(--louange); color: var(--louange); }
+.section-tab[data-section="Adoration"].active { background: rgba(245,158,11,0.15); border-color: var(--adoration); color: var(--adoration); }
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   9. PROFIL MEMBRE (tessiture, groupes, tâches)
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* En-tête du profil */
+.member-profile-header {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1.5rem;
+  background: var(--bg3);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.profile-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.profile-info { flex: 1; min-width: 150px; }
+
+.profile-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.7rem;
+  font-weight: 700;
+  margin-bottom: 0.2rem;
+}
+
+.profile-role {
+  color: var(--text2);
+  font-size: 0.85rem;
+  margin-bottom: 0.6rem;
+}
+
+.profile-stats {
+  display: flex;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.profile-stat { text-align: center; }
+
+.profile-stat-val {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1;
+}
+
+.profile-stat-lbl {
+  font-size: 0.62rem;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 0.2rem;
+}
+
+/* Diviseur avec titre de section */
+.section-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.5rem 0 1rem;
+}
+
+.section-divider-line { flex: 1; height: 1px; background: var(--border); }
+
+.section-divider-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text3);
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+/* Tableau tessiture vocale */
+.range-table { width: 100%; border-collapse: collapse; }
+.range-table th {
+  padding: 0.6rem 0.85rem;
+  font-size: 0.68rem;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg3);
+  font-weight: 600;
+}
+.range-table td {
+  padding: 0.7rem 0.85rem;
+  font-size: 0.875rem;
+  border-bottom: 1px solid var(--border);
+}
+.range-table tr:last-child td { border-bottom: none; }
+
+.voice-type-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  background: rgba(201,168,76,0.12);
+  border: 1px solid rgba(201,168,76,0.25);
+  border-radius: 100px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.range-note { font-weight: 600; color: var(--text); }
+
+/* Grille de groupes vocaux */
+.harmony-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 0.75rem;
+}
+
+.harmony-card {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.85rem;
+}
+
+.harmony-part {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--accent);
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+}
+
+.harmony-members {
+  font-size: 0.82rem;
+  color: var(--text2);
+  line-height: 1.4;
+}
+
+.harmony-lead-label {
+  font-size: 0.7rem;
+  color: var(--text3);
+  margin-bottom: 0.5rem;
+}
+
+/* Liste de tâches */
+.task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.task-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.6rem 0.85rem;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  transition: background 0.1s;
+}
+
+.task-check {
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  flex-shrink: 0;
+}
+
+.task-check.done {
+  background: rgba(34,197,94,0.15);
+  color: var(--success);
+  border: 1px solid rgba(34,197,94,0.3);
+}
+
+.task-check.pending {
+  background: var(--bg4);
+  color: var(--text3);
+  border: 1px solid var(--border);
+}
+
+.task-text-done    { color: var(--text); }
+.task-text-pending { color: var(--text3); }

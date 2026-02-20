@@ -1,0 +1,188 @@
+/* =============================================================================
+   LAYOUT.CSS — Sidebar + Structure principale de l'application
+   ============================================================================= */
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   CONTENEUR PRINCIPAL DE L'APP
+   ───────────────────────────────────────────────────────────────────────────── */
+#app {
+  display: none;          /* caché jusqu'au chargement des données */
+  flex-direction: row;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Quand l'app est active */
+#app.visible {
+  display: flex;
+}
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   SIDEBAR (menu latéral)
+   ───────────────────────────────────────────────────────────────────────────── */
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow-y: auto;
+  z-index: 10;
+}
+
+/* Logo dans la sidebar */
+.sidebar-logo {
+  padding: 1.5rem 1.25rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.sidebar-logo-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1;
+  margin-bottom: 0.2rem;
+}
+
+.sidebar-logo-sub {
+  font-size: 0.68rem;
+  color: var(--text3);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Navigation */
+.sidebar-nav {
+  padding: 1rem 0.75rem;
+  flex: 1;
+}
+
+.nav-section-label {
+  font-size: 0.68rem;
+  color: var(--text3);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.5rem 0.5rem 0.3rem;
+  margin-top: 0.5rem;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--text2);
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.15s;
+  margin-bottom: 0.15rem;
+  user-select: none;
+}
+
+.nav-item:hover {
+  background: var(--bg3);
+  color: var(--text);
+}
+
+.nav-item.active {
+  background: rgba(201,168,76,0.12);
+  color: var(--accent);
+}
+
+.nav-item .nav-icon {
+  width: 18px;
+  text-align: center;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+/* Pied de la sidebar */
+.sidebar-footer {
+  padding: 1rem;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.sidebar-footer-btn {
+  width: 100%;
+  padding: 0.6rem;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text2);
+  font-size: 0.78rem;
+  cursor: pointer;
+  font-family: 'Outfit', sans-serif;
+  transition: all 0.2s;
+}
+
+.sidebar-footer-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   ZONE DE CONTENU PRINCIPAL
+   ───────────────────────────────────────────────────────────────────────────── */
+.main-content {
+  flex: 1;
+  overflow-y: auto;       /* scroll géré ici, pas sur body */
+  display: flex;
+  flex-direction: column;
+  min-width: 0;           /* évite le dépassement en flexbox */
+}
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   PAGES (vues)
+   ───────────────────────────────────────────────────────────────────────────── */
+.page {
+  display: none;
+  padding: 2rem;
+  animation: fadeInUp 0.25s ease;
+  flex: 1;
+}
+
+.page.active {
+  display: block;
+}
+
+/* En-tête de page */
+.page-header {
+  margin-bottom: 1.75rem;
+}
+
+.page-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.page-subtitle {
+  color: var(--text2);
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   RESPONSIVE — Mobile
+   ───────────────────────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .sidebar {
+    display: none;   /* masqué sur mobile (pourrait être un menu hamburger) */
+  }
+
+  .page {
+    padding: 1rem;
+  }
+}

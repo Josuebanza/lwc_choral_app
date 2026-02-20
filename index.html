@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LWC — Répertoire Musical</title>
+
+  <!-- ── Polices Google Fonts ── -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <!-- ── Librairies (CDN) ── -->
+  <!-- SheetJS : lecture des fichiers Excel .xlsx -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <!-- PapaParse : parsing CSV pour Google Sheets -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+  <!-- ── Feuilles de style ── -->
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/setup.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+
+  <!-- ════════════════════════════════════════════════════════════════════════
+       TOAST — Notification temporaire (coin bas-droit)
+       Affiché / masqué via utils.js → showToast()
+       ════════════════════════════════════════════════════════════════════════ -->
+  <div id="toast" class="toast" role="alert" aria-live="polite"></div>
+
+
+  <!-- ════════════════════════════════════════════════════════════════════════
+       ÉCRAN DE CONFIGURATION
+       Affiché au démarrage. Caché par main.js une fois les données chargées.
+       ════════════════════════════════════════════════════════════════════════ -->
+  <div id="setup-screen">
+    <div class="setup-card">
+
+      <!-- Logo -->
+      <div class="setup-logo">🎵 LWC</div>
+      <div class="setup-subtitle">Gestionnaire de Répertoire Musical</div>
+
+      <!-- Onglets de source de données -->
+      <div class="setup-tabs">
+        <button class="setup-tab-btn active" data-panel="tab-upload">
+          📂 Fichier XLSX
+        </button>
+        <button class="setup-tab-btn" data-panel="tab-sheets">
+          🔗 Google Sheets
+        </button>
+      </div>
+
+
+      <!-- ── ONGLET 1 : Chargement de fichier XLSX ── -->
+      <div class="setup-tab-panel active" id="tab-upload">
+        <p style="font-size:0.85rem;color:var(--text2);margin-bottom:1.25rem;">
+          Glissez-déposez votre fichier Excel (.xlsx) ou cliquez pour le sélectionner.
+          Les données seront sauvegardées dans votre navigateur.
+        </p>
+
+        <div class="drop-zone" id="drop-zone">
+          <span class="drop-icon">📁</span>
+          <div class="drop-title">Glisser-déposer ou cliquer</div>
+          <div class="drop-sub">Fichier .xlsx du répertoire LWC</div>
+          <div class="drop-filename" id="drop-filename"></div>
+        </div>
+
+        <!-- Input file caché, déclenché par le drop-zone -->
+        <input type="file" id="file-input" accept=".xlsx" style="display:none" aria-label="Sélectionner un fichier XLSX">
+
+        <button class="setup-btn" id="upload-btn" disabled>
+          Charger le fichier →
+        </button>
+      </div>
+
+
+      <!-- ── ONGLET 2 : Connexion Google Sheets ── -->
+      <div class="setup-tab-panel" id="tab-sheets">
+
+        <div class="setup-info-block">
+          <strong>Configuration Google Sheets</strong><br>
+          1. Ouvrez votre Google Sheet → <em>Fichier → Partager → Publier sur le web</em><br>
+          2. Copiez l'ID depuis l'URL :<br>
+          <code>docs.google.com/spreadsheets/d/<strong>[ID ICI]</strong>/edit</code><br>
+          3. Pour chaque feuille, trouvez le GID dans l'URL après avoir cliqué sur l'onglet :
+          <code>...#gid=<strong>XXXXXXXXX</strong></code>
+        </div>
+
+        <!-- ID principal du Spreadsheet -->
+        <div class="setup-field-label">ID du Google Sheet <span class="setup-required-tag">* requis</span></div>
+        <input class="setup-input" id="sheets-id"
+               placeholder="ex: 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms"
+               autocomplete="off">
+
+        <!-- GIDs des feuilles OBLIGATOIRES -->
+        <div class="setup-section-title">
+          Feuilles obligatoires <span class="setup-required-tag">* GID requis</span>
+        </div>
+        <div class="setup-grid-2">
+          <div>
+            <div class="setup-field-label">GID — Entrée</div>
+            <input class="setup-input" id="gid-entree" placeholder="ex: 0" autocomplete="off">
+          </div>
+          <div>
+            <div class="setup-field-label">GID — S-E</div>
+            <input class="setup-input" id="gid-se" placeholder="ex: 1234567890" autocomplete="off">
+          </div>
+          <div>
+            <div class="setup-field-label">GID — Louange</div>
+            <input class="setup-input" id="gid-louange" placeholder="ex: 1234567890" autocomplete="off">
+          </div>
+          <div>
+            <div class="setup-field-label">GID — Adoration</div>
+            <input class="setup-input" id="gid-adoration" placeholder="ex: 1234567890" autocomplete="off">
+          </div>
+        </div>
+
+        <!-- GIDs des feuilles OPTIONNELLES -->
+        <div class="setup-section-title">
+          Feuilles optionnelles <span class="setup-optional-tag">(recommandé)</span>
+        </div>
+        <div class="setup-grid-2">
+          <div>
+            <div class="setup-field-label">GID — Progressions</div>
+            <input class="setup-input" id="gid-prog" placeholder="Progression Blank" autocomplete="off">
+          </div>
+          <div>
+            <div class="setup-field-label">GID — Membres</div>
+            <input class="setup-input" id="gid-report" placeholder="Report sheet" autocomplete="off">
+          </div>
+          <div>
+            <div class="setup-field-label">GID — Tessiture</div>
+            <input class="setup-input" id="gid-vocal-range" placeholder="Vocal Range" autocomplete="off">
+          </div>
+          <div>
+            <div class="setup-field-label">GID — Groupes vocaux</div>
+            <input class="setup-input" id="gid-groupes" placeholder="Groupes vocal" autocomplete="off">
+          </div>
+          <div>
+            <div class="setup-field-label">GID — Tâches</div>
+            <input class="setup-input" id="gid-taches" placeholder="Taches" autocomplete="off">
+          </div>
+        </div>
+
+        <button class="setup-btn" id="sheets-btn" disabled>
+          Connecter Google Sheets →
+        </button>
+      </div>
+
+
+      <!-- Séparateur -->
+      <div class="setup-divider">Session précédente</div>
+
+      <!-- Bouton cache -->
+      <button class="setup-btn setup-btn-secondary" id="cache-btn">
+        ↩ Continuer avec les dernières données
+      </button>
+
+    </div>
+  </div><!-- /setup-screen -->
+
+
+  <!-- ════════════════════════════════════════════════════════════════════════
+       APPLICATION PRINCIPALE
+       Caché au démarrage. Affiché par main.js via la classe .visible
+       ════════════════════════════════════════════════════════════════════════ -->
+  <div id="app">
+
+    <!-- ── SIDEBAR ── -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-text">🎵 LWC</div>
+        <div class="sidebar-logo-sub">Répertoire Musical</div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-label">Navigation</div>
+
+        <div class="nav-item active" data-view="dashboard">
+          <span class="nav-icon">📊</span> Dashboard
+        </div>
+        <div class="nav-item" data-view="songs">
+          <span class="nav-icon">🎶</span> Chansons
+        </div>
+        <div class="nav-item" data-view="members">
+          <span class="nav-icon">👤</span> Membres
+        </div>
+        <div class="nav-item" data-view="service">
+          <span class="nav-icon">📋</span> Service
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button class="sidebar-footer-btn" id="reset-btn">
+          ⇄ Changer de source
+        </button>
+      </div>
+    </aside><!-- /sidebar -->
+
+
+    <!-- ── CONTENU PRINCIPAL ── -->
+    <main class="main-content">
+
+      <!-- ────────────────────────────────────────────────────────────────────
+           PAGE : DASHBOARD
+           ──────────────────────────────────────────────────────────────────── -->
+      <div class="page active" id="page-dashboard">
+        <div class="page-header">
+          <h1 class="page-title">Dashboard</h1>
+          <p class="page-subtitle" id="dash-subtitle">Chargement...</p>
+        </div>
+
+        <!-- Grille de statistiques (injectée par dashboard.js) -->
+        <div class="stats-grid" id="stats-grid"></div>
+
+        <!-- Panneaux en 2 colonnes -->
+        <div class="panels-grid">
+          <div class="panel">
+            <div class="panel-header">
+              <span class="panel-title">🕰️ Chantées récemment</span>
+            </div>
+            <div class="panel-body" id="recent-songs"></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <span class="panel-title">⚠️ Non chantées depuis longtemps</span>
+            </div>
+            <div class="panel-body" id="old-songs"></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <span class="panel-title">📚 Répartition par section</span>
+            </div>
+            <div class="panel-body" id="section-dist"></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <span class="panel-title">🌐 Répartition par langue</span>
+            </div>
+            <div class="panel-body" id="lang-dist"></div>
+          </div>
+        </div>
+      </div><!-- /page-dashboard -->
+
+
+      <!-- ────────────────────────────────────────────────────────────────────
+           PAGE : CHANSONS
+           ──────────────────────────────────────────────────────────────────── -->
+      <div class="page" id="page-songs">
+        <div class="page-header">
+          <h1 class="page-title">Chansons</h1>
+          <p class="page-subtitle" id="songs-count">Chargement...</p>
+        </div>
+
+        <!-- Barre de recherche et filtres -->
+        <div class="search-bar">
+          <div class="search-input-wrap">
+            <span class="search-icon">🔍</span>
+            <input class="search-input" id="songs-search"
+                   placeholder="Rechercher une chanson..."
+                   aria-label="Rechercher une chanson">
+          </div>
+          <select class="filter-select" id="songs-section" aria-label="Filtrer par section">
+            <option value="">Toutes sections</option>
+            <option value="Entrée">Entrée</option>
+            <option value="S-E">S-E</option>
+            <option value="Louange">Louange</option>
+            <option value="Adoration">Adoration</option>
+          </select>
+          <select class="filter-select" id="songs-langue" aria-label="Filtrer par langue">
+            <option value="">Toutes langues</option>
+            <option value="FR">Français</option>
+            <option value="ENG">Anglais</option>
+            <option value="LNGL">Lingala</option>
+          </select>
+          <select class="filter-select" id="songs-prog" aria-label="Filtrer par progression">
+            <option value="">Progression</option>
+            <option value="yes">Avec progression</option>
+            <option value="no">Sans progression</option>
+          </select>
+          <select class="filter-select" id="songs-lyrics" aria-label="Filtrer par paroles">
+            <option value="">Paroles</option>
+            <option value="yes">Avec paroles</option>
+            <option value="no">Sans paroles</option>
+          </select>
+          <select class="filter-select" id="songs-sort" aria-label="Trier par">
+            <option value="title">Trier : Titre A→Z</option>
+            <option value="days-asc">Trier : Récentes d'abord</option>
+            <option value="days-desc">Trier : Anciennes d'abord</option>
+            <option value="section">Trier : Section</option>
+          </select>
+        </div>
+
+        <div class="results-info" id="songs-results-info"></div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Chanson</th>
+                <th>Section</th>
+                <th>Langue</th>
+                <th>Tonalité orig.</th>
+                <th>Dernière fois</th>
+                <th>Jours</th>
+                <th>Paroles</th>
+                <th>Progression</th>
+              </tr>
+            </thead>
+            <tbody id="songs-tbody">
+              <!-- Injecté par songs.js -->
+            </tbody>
+          </table>
+        </div>
+
+        <div class="pagination" id="songs-pagination"></div>
+      </div><!-- /page-songs -->
+
+
+      <!-- ────────────────────────────────────────────────────────────────────
+           PAGE : MEMBRES
+           ──────────────────────────────────────────────────────────────────── -->
+      <div class="page" id="page-members">
+        <div class="page-header">
+          <h1 class="page-title">Membres</h1>
+          <p class="page-subtitle">Cliquez sur un membre pour voir son profil complet</p>
+        </div>
+
+        <!-- Filtre par nom -->
+        <div class="search-bar" style="margin-bottom:1.25rem;">
+          <div class="search-input-wrap" style="max-width:320px;">
+            <span class="search-icon">🔍</span>
+            <input class="search-input" id="member-filter"
+                   placeholder="Filtrer les membres..."
+                   aria-label="Filtrer les membres">
+          </div>
+        </div>
+
+        <!-- Grille de cartes membres (injectée par members.js) -->
+        <div class="members-grid" id="members-grid"></div>
+
+        <!-- Profil détaillé (injecté par members.js au clic) -->
+        <div id="member-detail"></div>
+      </div><!-- /page-members -->
+
+
+      <!-- ────────────────────────────────────────────────────────────────────
+           PAGE : SERVICE
+           ──────────────────────────────────────────────────────────────────── -->
+      <div class="page" id="page-service">
+        <div class="page-header">
+          <h1 class="page-title">Planification de Service</h1>
+          <p class="page-subtitle">Répertoire par section du culte</p>
+        </div>
+
+        <!-- Onglets de section -->
+        <div class="section-tabs">
+          <div class="section-tab active" data-section="Entrée">🟢 Entrée</div>
+          <div class="section-tab" data-section="S-E">🟠 S-E</div>
+          <div class="section-tab" data-section="Louange">🟣 Louange</div>
+          <div class="section-tab" data-section="Adoration">🟡 Adoration</div>
+        </div>
+
+        <!-- Filtres -->
+        <div class="search-bar">
+          <div class="search-input-wrap">
+            <span class="search-icon">🔍</span>
+            <input class="search-input" id="service-search"
+                   placeholder="Rechercher dans cette section..."
+                   aria-label="Rechercher une chanson">
+          </div>
+          <select class="filter-select" id="service-langue" aria-label="Filtrer par langue">
+            <option value="">Toutes langues</option>
+            <option value="FR">Français</option>
+            <option value="ENG">Anglais</option>
+            <option value="LNGL">Lingala</option>
+          </select>
+          <select class="filter-select" id="service-member" aria-label="Filtrer par membre">
+            <option value="">Tous les membres</option>
+            <!-- Options injectées par service.js après chargement des données -->
+          </select>
+          <select class="filter-select" id="service-sort" aria-label="Trier par">
+            <option value="title">Titre A→Z</option>
+            <option value="days-desc">Moins récentes</option>
+            <option value="days-asc">Plus récentes</option>
+          </select>
+        </div>
+
+        <div class="results-info" id="service-results-info"></div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Chanson</th>
+                <th>Langue</th>
+                <th>Tonalité orig.</th>
+                <th>Dernière fois</th>
+                <th>Jours</th>
+                <th>Progression</th>
+                <th>Creu/Sommet</th>
+              </tr>
+            </thead>
+            <tbody id="service-tbody">
+              <!-- Injecté par service.js -->
+            </tbody>
+          </table>
+        </div>
+
+        <div class="pagination" id="service-pagination"></div>
+      </div><!-- /page-service -->
+
+    </main><!-- /main-content -->
+  </div><!-- /app -->
+
+
+  <!-- ════════════════════════════════════════════════════════════════════════
+       MODAL — Détail d'une chanson
+       Ouvert via openSongModal(songId) depuis modal.js
+       ════════════════════════════════════════════════════════════════════════ -->
+  <div id="modal-overlay" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal">
+
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title" id="modal-title"></h2>
+          <div class="modal-badges" id="modal-badges"></div>
+        </div>
+        <button class="modal-close-btn" id="modal-close-btn" aria-label="Fermer">✕</button>
+      </div>
+
+      <div class="modal-body" id="modal-body">
+        <!-- Injecté par modal.js -->
+      </div>
+
+    </div>
+  </div><!-- /modal-overlay -->
+
+
+  <!-- ── Module JavaScript principal (type="module" pour les imports ES6) ── -->
+  <script type="module" src="js/main.js"></script>
+
+</body>
+</html>

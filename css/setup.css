@@ -1,0 +1,325 @@
+/* =============================================================================
+   SETUP.CSS — Écran de configuration (chargement des données)
+   =============================================================================
+
+   Cet écran s'affiche au lancement de l'app pour permettre à l'utilisateur
+   de choisir sa source de données : fichier XLSX ou Google Sheets.
+
+   CORRECTION PRINCIPALE : Le setup-screen est SCROLLABLE (pas overflow:hidden)
+   car il contient beaucoup de champs, surtout sur petits écrans.
+   ============================================================================= */
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   CONTENEUR PRINCIPAL
+   ───────────────────────────────────────────────────────────────────────────── */
+#setup-screen {
+  /* Pleine hauteur, centré horizontalement, scrollable verticalement */
+  display: flex;
+  align-items: flex-start;        /* ← clé : pas center, pour éviter le découpage */
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem 1rem;
+  overflow-y: auto;               /* ← scroll vertical si contenu dépasse */
+
+  /* Fond dégradé radial subtil */
+  background: radial-gradient(ellipse at 30% 50%, #1a1635 0%, var(--bg) 60%);
+}
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   CARTE DE CONFIGURATION
+   ───────────────────────────────────────────────────────────────────────────── */
+.setup-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 2.5rem;
+  max-width: 680px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+
+  /* Centrage vertical quand le contenu est plus petit que l'écran */
+  margin: auto 0;
+}
+
+/* Logo */
+.setup-logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: -1px;
+  margin-bottom: 0.3rem;
+}
+
+.setup-subtitle {
+  color: var(--text2);
+  font-size: 0.9rem;
+  margin-bottom: 2.5rem;
+}
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   ONGLETS (Fichier XLSX / Google Sheets)
+   ───────────────────────────────────────────────────────────────────────────── */
+.setup-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+}
+
+.setup-tab-btn {
+  flex: 1;
+  padding: 0.75rem;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text2);
+  cursor: pointer;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.setup-tab-btn:hover {
+  border-color: var(--text3);
+  color: var(--text);
+}
+
+.setup-tab-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #000;
+  font-weight: 600;
+}
+
+/* Panneau de chaque onglet */
+.setup-tab-panel {
+  display: none;
+}
+
+.setup-tab-panel.active {
+  display: block;
+}
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   CHAMPS DE FORMULAIRE
+   ───────────────────────────────────────────────────────────────────────────── */
+.setup-field-label {
+  font-size: 0.75rem;
+  color: var(--text2);
+  margin-bottom: 0.4rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.setup-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+  margin-bottom: 1rem;
+}
+
+.setup-input:focus {
+  border-color: var(--accent);
+}
+
+.setup-input::placeholder {
+  color: var(--text3);
+  font-size: 0.85rem;
+}
+
+/* Grille 2 colonnes pour les GIDs */
+.setup-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 1rem;
+}
+
+@media (max-width: 500px) {
+  .setup-grid-2 { grid-template-columns: 1fr; }
+}
+
+/* Sous-texte d'aide */
+.setup-hint {
+  font-size: 0.75rem;
+  color: var(--text3);
+  margin-top: -0.75rem;
+  margin-bottom: 1rem;
+  line-height: 1.4;
+}
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   BOUTONS
+   ───────────────────────────────────────────────────────────────────────────── */
+.setup-btn {
+  width: 100%;
+  padding: 1rem;
+  background: var(--accent);
+  border: none;
+  border-radius: 10px;
+  color: #000;
+  font-family: 'Outfit', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 0.5rem;
+}
+
+.setup-btn:hover:not(:disabled) {
+  background: var(--accent2);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(201,168,76,0.3);
+}
+
+.setup-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.setup-btn-secondary {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text2);
+  margin-top: 0;
+}
+
+.setup-btn-secondary:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--bg3);
+  box-shadow: none;
+}
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   ZONE DE DÉPÔT FICHIER (drag & drop)
+   ───────────────────────────────────────────────────────────────────────────── */
+.drop-zone {
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  padding: 2.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--text2);
+  user-select: none;
+}
+
+.drop-zone:hover,
+.drop-zone.drag-over {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(201,168,76,0.05);
+}
+
+.drop-zone .drop-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.75rem;
+  display: block;
+}
+
+.drop-zone .drop-title {
+  font-weight: 500;
+  margin-bottom: 0.3rem;
+}
+
+.drop-zone .drop-sub {
+  font-size: 0.8rem;
+  color: var(--text3);
+}
+
+/* Nom du fichier sélectionné */
+.drop-filename {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background: rgba(34,197,94,0.1);
+  border: 1px solid rgba(34,197,94,0.2);
+  border-radius: 6px;
+  color: var(--success);
+  font-size: 0.85rem;
+  display: none; /* affiché via JS quand un fichier est sélectionné */
+}
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   BLOC D'INFO (Google Sheets instructions)
+   ───────────────────────────────────────────────────────────────────────────── */
+.setup-info-block {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.82rem;
+  color: var(--text2);
+  line-height: 1.7;
+}
+
+.setup-info-block strong {
+  color: var(--accent);
+}
+
+.setup-info-block code {
+  background: var(--bg4);
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  color: var(--accent);
+  font-size: 0.78rem;
+  font-family: 'Courier New', monospace;
+}
+
+/* Séparateur avec texte centré */
+.setup-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.5rem 0;
+  color: var(--text3);
+  font-size: 0.8rem;
+}
+
+.setup-divider::before,
+.setup-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* Titre de section dans le formulaire GIDs */
+.setup-section-title {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text3);
+  margin: 1.5rem 0 0.75rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.setup-required-tag {
+  color: var(--danger);
+  font-size: 0.65rem;
+  margin-left: 0.3rem;
+}
+
+.setup-optional-tag {
+  color: var(--text3);
+  font-size: 0.65rem;
+  margin-left: 0.3rem;
+}

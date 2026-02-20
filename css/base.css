@@ -1,0 +1,209 @@
+/* =============================================================================
+   BASE.CSS — Variables, Reset, Typographie
+   LWC Gestionnaire de Répertoire Musical
+   =============================================================================
+
+   Table des matières :
+   1. Variables CSS (design tokens)
+   2. Reset & Box model
+   3. Typographie globale
+   4. Classes utilitaires (badge, spinner, empty state, toast)
+   ============================================================================= */
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   1. VARIABLES CSS (design tokens)
+   ───────────────────────────────────────────────────────────────────────────── */
+:root {
+  /* Arrière-plans (du plus sombre au plus clair) */
+  --bg:      #0c0d12;   /* fond de page */
+  --bg2:     #13141d;   /* cartes, panneaux */
+  --bg3:     #1c1e2b;   /* sous-éléments, inputs */
+  --bg4:     #252838;   /* surbrillance légère */
+
+  /* Bordures */
+  --border:  #2e3149;
+
+  /* Texte */
+  --text:    #e8e6f0;   /* texte principal */
+  --text2:   #9b99b0;   /* texte secondaire */
+  --text3:   #5c5a72;   /* texte désactivé / labels */
+
+  /* Couleur d'accentuation (or) */
+  --accent:  #c9a84c;
+  --accent2: #e8c76a;   /* accent hover */
+
+  /* Couleurs des sections du culte */
+  --entree:    #10b981;   /* vert  — Entrée    */
+  --se:        #f97316;   /* orange — S-E       */
+  --louange:   #818cf8;   /* violet — Louange   */
+  --adoration: #f59e0b;   /* ambre — Adoration  */
+
+  /* États */
+  --danger:  #ef4444;
+  --success: #22c55e;
+
+  /* Dimensions de mise en page */
+  --sidebar-w:  240px;   /* largeur de la sidebar */
+  --radius:     10px;    /* rayon de bordure standard */
+  --shadow:     0 4px 24px rgba(0,0,0,0.4);
+}
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   2. RESET & BOX MODEL
+   ───────────────────────────────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  /* Permet le scroll sur le body sauf quand l'app est ouverte
+     (géré via la classe .app-open sur body) */
+  height: 100%;
+}
+
+body {
+  min-height: 100%;
+  font-family: 'Outfit', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.5;
+  /* NOTE: pas de overflow:hidden global → corrige le problème d'écran coupé */
+}
+
+/* Quand l'app principale est affichée, on verrouille le scroll du body
+   car le scroll se gère dans chaque panneau séparément */
+body.app-open {
+  overflow: hidden;
+  height: 100vh;
+}
+
+/* Scrollbar personnalisée */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--bg4); }
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   3. TYPOGRAPHIE GLOBALE
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* Police serif pour les titres et logos */
+.font-serif {
+  font-family: 'Cormorant Garamond', serif;
+}
+
+h1, h2, h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.2;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   4. CLASSES UTILITAIRES
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* ── Badges (étiquettes colorées) ── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.6rem;
+  border-radius: 100px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Badges par section */
+.badge-entree    { background: rgba(16,185,129,0.15); color: var(--entree); }
+.badge-se        { background: rgba(249,115,22,0.15);  color: var(--se); }
+.badge-louange   { background: rgba(129,140,248,0.15); color: var(--louange); }
+.badge-adoration { background: rgba(245,158,11,0.15);  color: var(--adoration); }
+
+/* Badges par langue */
+.badge-fr   { background: rgba(96,165,250,0.15);  color: #60a5fa; }
+.badge-eng  { background: rgba(52,211,153,0.15);  color: #34d399; }
+.badge-lngl { background: rgba(251,191,36,0.15);  color: #fbbf24; }
+.badge-—    { background: rgba(107,114,128,0.15); color: #6b7280; }
+
+/* Badges oui/non */
+.badge-yes { background: rgba(34,197,94,0.15);  color: var(--success); }
+.badge-no  { background: rgba(107,114,128,0.15); color: #6b7280; }
+
+/* ── Spinner de chargement ── */
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── État vide (aucun résultat) ── */
+.empty-state {
+  text-align: center;
+  padding: 3rem 2rem;
+  color: var(--text3);
+}
+
+.empty-state .empty-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.75rem;
+  opacity: 0.5;
+}
+
+.empty-state .empty-text {
+  font-size: 0.875rem;
+}
+
+/* ── Toast (notification temporaire) ── */
+.toast {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.85rem 1.25rem;
+  font-size: 0.875rem;
+  z-index: 300;
+  transform: translateY(120%);
+  transition: transform 0.3s ease;
+  box-shadow: var(--shadow);
+  max-width: 320px;
+  pointer-events: none;
+}
+
+.toast.show    { transform: translateY(0); }
+.toast.success { border-color: var(--success); color: var(--success); }
+.toast.error   { border-color: var(--danger);  color: var(--danger); }
+
+/* ── Animation d'entrée des pages ── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Responsive breakpoints ── */
+@media (max-width: 768px) {
+  :root { --sidebar-w: 0px; }
+}
