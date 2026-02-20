@@ -131,12 +131,14 @@
   background: var(--bg2);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
+  min-width: 760px;
 }
 
 thead th {
@@ -832,3 +834,70 @@ tbody tr:hover td { background: rgba(255,255,255,0.018); }
 
 .task-text-done    { color: var(--text); }
 .task-text-pending { color: var(--text3); }
+
+@media (max-width: 768px) {
+  .search-bar {
+    gap: 0.55rem;
+  }
+
+  .search-input-wrap {
+    min-width: 100%;
+  }
+
+  .filter-select {
+    flex: 1 1 calc(50% - 0.4rem);
+    min-width: 0;
+  }
+
+  .table-wrap {
+    border-radius: 8px;
+  }
+
+  thead th,
+  tbody td {
+    padding: 0.62rem 0.72rem;
+  }
+
+  .pagination {
+    justify-content: center;
+  }
+
+  .modal-overlay {
+    padding: 0.55rem;
+  }
+
+  .modal {
+    max-height: 94dvh;
+    border-radius: 12px;
+  }
+
+  .modal-header {
+    padding: 1rem 1rem 0.7rem;
+  }
+
+  .modal-body {
+    padding: 1rem;
+  }
+
+  .panel-item-title {
+    max-width: 150px;
+  }
+}
+
+@media (max-width: 520px) {
+  .stats-grid,
+  .members-grid,
+  .harmony-grid,
+  .meta-grid,
+  .keys-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-select {
+    flex: 1 1 100%;
+  }
+
+  .profile-name {
+    font-size: 1.4rem;
+  }
+}

@@ -206,4 +206,12 @@ a {
 /* ── Responsive breakpoints ── */
 @media (max-width: 768px) {
   :root { --sidebar-w: 0px; }
+
+  .toast {
+    right: 0.75rem;
+    left: 0.75rem;
+    bottom: 0.75rem;
+    max-width: none;
+    font-size: 0.82rem;
+  }
 }

@@ -178,11 +178,57 @@
    RESPONSIVE — Mobile
    ───────────────────────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
+  #app {
+    flex-direction: column;
+    height: 100dvh;
+  }
+
   .sidebar {
-    display: none;   /* masqué sur mobile (pourrait être un menu hamburger) */
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    overflow: visible;
+  }
+
+  .sidebar-logo,
+  .sidebar-footer {
+    display: none;
+  }
+
+  .sidebar-nav {
+    padding: 0.55rem 0.75rem;
+    display: flex;
+    gap: 0.45rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .sidebar-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .nav-section-label {
+    display: none;
+  }
+
+  .nav-item {
+    margin-bottom: 0;
+    white-space: nowrap;
+    flex-shrink: 0;
+    padding: 0.5rem 0.7rem;
+    font-size: 0.8rem;
   }
 
   .page {
     padding: 1rem;
+  }
+
+  .page-header {
+    margin-bottom: 1.15rem;
+  }
+
+  .page-title {
+    font-size: 1.55rem;
   }
 }
