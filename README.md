@@ -161,3 +161,41 @@ Dans `js/config.js` :
 ```js
 export const PER_PAGE = 25; // ← modifier ici
 ```
+
+---
+
+## 📱 PWA (Android, iOS, Windows, macOS, Linux)
+
+L'application est maintenant installable comme PWA avec :
+- `manifest.webmanifest`
+- `service-worker.js` (cache offline + runtime)
+- Icônes (`icons/`)
+- Bouton d'installation dans l'écran de setup
+
+### Pré-requis importants
+- Utiliser `https://` en production (obligatoire pour Service Worker, sauf `localhost`)
+- Ne pas ouvrir l'app en `file://` pour les fonctionnalités PWA
+
+### Installation par plateforme
+- Android (Chrome, Edge, Samsung Internet) : menu navigateur → `Installer l'application`
+- iOS/iPadOS (Safari) : `Partager` → `Sur l'écran d'accueil`
+- Windows/macOS/Linux (Chrome/Edge) : icône d'installation dans la barre d'adresse ou bouton `Installer l'application`
+
+### Tester en local
+Servir le dossier avec un serveur local (exemples) :
+
+```bash
+# Python
+python -m http.server 8080
+
+# Node (si installé)
+npx serve .
+```
+
+Puis ouvrir `http://localhost:8080`.
+
+### Checklist de validation
+- Le manifest se charge sans erreur
+- Le service worker est `activated` dans les DevTools
+- L'app fonctionne hors-ligne après première visite
+- Le prompt d'installation apparaît (ou procédure iOS manuelle)

@@ -21,6 +21,7 @@ import { initServiceView, renderServiceTable,
          populateMemberFilter }                   from './views/service.js';
 import { SINGERS, AVATAR_COLORS }                 from './config.js';
 import { normalizeName }                          from './utils.js';
+import { initPWA }                                from './pwa.js';
 
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -33,6 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initSongsView();
   initMembersView();
   initServiceView();
+  initPWA();
 
   // Écouteurs de navigation sidebar
   document.querySelectorAll('.nav-item[data-view]').forEach(item => {
